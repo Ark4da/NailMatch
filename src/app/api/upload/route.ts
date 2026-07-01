@@ -15,7 +15,7 @@ import {
 import { mockMatches } from "@/lib/mock-matches";
 import { getErrorMessage, PipelineError } from "@/lib/pipeline-error";
 import { validateImageUpload } from "@/lib/upload-validation";
-import { findPinterestReferences } from "@/features/pinterest/client";
+import { findExternalImageReferences } from "@/features/image-search/client";
 
 export async function POST(request: Request): Promise<NextResponse> {
   const formData = await request.formData();
@@ -40,14 +40,14 @@ export async function POST(request: Request): Promise<NextResponse> {
         analysis,
         embedding
       });
-      const pinterestReferences = await getPinterestReferencesSafely({
+      const externalReferences = await getExternalReferencesSafely({
         analysis,
         promptHint
       });
       const generatedImage = await generateManicureConceptImage({
         analysis,
         matches: savedDesign.matches,
-        pinterestReferences,
+        externalReferences,
         promptHint
       });
       const storedGeneratedImage = await saveGeneratedImage({
@@ -63,7 +63,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         promptHint,
         mode: "live",
         matches: savedDesign.matches,
-        pinterestReferences
+        externalReferences
       });
     } catch (error) {
       if (error instanceof PipelineError) {
@@ -97,25 +97,25 @@ export async function POST(request: Request): Promise<NextResponse> {
     promptHint,
     mode: "mock",
     matches: mockMatches,
-    pinterestReferences: []
+    externalReferences: []
   });
 }
 
-async function getPinterestReferencesSafely(input: {
+async function getExternalReferencesSafely(input: {
   analysis: Awaited<ReturnType<typeof analyzeManicureImage>>;
   promptHint: string;
 }) {
   try {
-    return await findPinterestReferences(input);
+    return await findExternalImageReferences(input);
   } catch (error) {
     if (error instanceof PipelineError) {
-      console.warn("Pinterest references skipped", {
+      console.warn("External image references skipped", {
         stage: error.stage,
         message: error.message,
         cause: getErrorMessage(error.cause)
       });
     } else {
-      console.warn("Pinterest references skipped", {
+      console.warn("External image references skipped", {
         stage: "unknown",
         message: getErrorMessage(error)
       });

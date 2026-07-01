@@ -8,12 +8,13 @@ export type NailMatch = {
   thumbnailUrl?: string | null;
 };
 
-export type PinterestReference = {
+export type ExternalImageReference = {
   id: string;
   title: string;
   description?: string;
   url?: string;
   imageUrl?: string;
+  source?: string;
 };
 
 export type UploadResponse = {
@@ -25,5 +26,5 @@ export type UploadResponse = {
   promptHint?: string;
   mode: "live" | "mock";
   matches: NailMatch[];
-  pinterestReferences?: PinterestReference[];
+  externalReferences?: ExternalImageReference[];
 };

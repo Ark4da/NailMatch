@@ -3,8 +3,8 @@
 import { useEffect, useId, useState } from "react";
 import { mockMatches } from "@/lib/mock-matches";
 import type {
+  ExternalImageReference,
   NailMatch,
-  PinterestReference,
   UploadResponse
 } from "@/types/nail-design";
 
@@ -38,8 +38,9 @@ const copy = {
       "Новая картинка создается из загруженного фото, похожих работ из базы и твоего дополнительного промта.",
     emptyGenerated: "Сгенерированная картинка появится здесь после обработки.",
     referencesTitle: "Ближайшие референсы из базы",
-    pinterestTitle: "Pinterest-референсы",
-    noPinterest: "Pinterest-референсы не подключены или не найдены.",
+    externalTitle: "Внешние референсы",
+    noExternal:
+      "Внешние референсы не подключены или не найдены. Добавь SerpAPI или Bing ключ в Railway, чтобы включить этот блок.",
     languageLabel: "Язык"
   },
   en: {
@@ -69,8 +70,9 @@ const copy = {
       "The generated image is created from your uploaded manicure, closest saved references, and your extra prompt.",
     emptyGenerated: "Generated image will appear here after processing.",
     referencesTitle: "Closest uploaded references",
-    pinterestTitle: "Pinterest references",
-    noPinterest: "Pinterest references are not connected or were not found.",
+    externalTitle: "External references",
+    noExternal:
+      "External references are not connected or were not found. Add a SerpAPI or Bing key in Railway to enable this block.",
     languageLabel: "Language"
   }
 } satisfies Record<Locale, Record<string, string>>;
@@ -83,8 +85,8 @@ export function HomeScreen(): React.JSX.Element {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [promptHint, setPromptHint] = useState<string>("");
   const [matches, setMatches] = useState<NailMatch[]>(mockMatches);
-  const [pinterestReferences, setPinterestReferences] = useState<
-    PinterestReference[]
+  const [externalReferences, setExternalReferences] = useState<
+    ExternalImageReference[]
   >([]);
   const [description, setDescription] = useState<string>("");
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string>("");
@@ -139,7 +141,7 @@ export function HomeScreen(): React.JSX.Element {
       setGeneratedImageUrl(payload.generatedImageUrl ?? "");
       setResponseMode(payload.mode ?? "mock");
       setMatches(payload.matches ?? []);
-      setPinterestReferences(payload.pinterestReferences ?? []);
+      setExternalReferences(payload.externalReferences ?? []);
     } catch (uploadError) {
       setError(
         uploadError instanceof Error ? uploadError.message : "Upload failed."
@@ -507,13 +509,13 @@ export function HomeScreen(): React.JSX.Element {
                 ))}
               </div>
 
-              <h3 style={{ margin: 0, fontSize: 18 }}>{t.pinterestTitle}</h3>
+              <h3 style={{ margin: 0, fontSize: 18 }}>{t.externalTitle}</h3>
 
-              {pinterestReferences.length > 0 ? (
+              {externalReferences.length > 0 ? (
                 <div style={{ display: "grid", gap: 14 }}>
-                  {pinterestReferences.map((pin) => (
+                  {externalReferences.map((reference) => (
                     <article
-                      key={pin.id}
+                      key={reference.id}
                       style={{
                         display: "grid",
                         gridTemplateColumns: "92px 1fr",
@@ -526,10 +528,10 @@ export function HomeScreen(): React.JSX.Element {
                           "linear-gradient(180deg, #fffaf7 0%, #fff4ec 100%)"
                       }}
                     >
-                      {pin.imageUrl ? (
+                      {reference.imageUrl ? (
                         <img
-                          src={pin.imageUrl}
-                          alt={pin.title}
+                          src={reference.imageUrl}
+                          alt={reference.title}
                           style={{
                             width: 92,
                             height: 92,
@@ -550,15 +552,15 @@ export function HomeScreen(): React.JSX.Element {
                         />
                       )}
                       <div style={{ display: "grid", gap: 6 }}>
-                        <strong>{pin.title}</strong>
-                        {pin.description ? (
+                        <strong>{reference.title}</strong>
+                        {reference.description ? (
                           <p style={{ margin: 0, lineHeight: 1.5 }}>
-                            {pin.description}
+                            {reference.description}
                           </p>
                         ) : null}
-                        {pin.url ? (
+                        {reference.url ? (
                           <a
-                            href={pin.url}
+                            href={reference.url}
                             target="_blank"
                             rel="noreferrer"
                             style={{
@@ -566,7 +568,7 @@ export function HomeScreen(): React.JSX.Element {
                               fontWeight: 700
                             }}
                           >
-                            Pinterest
+                            {reference.source ?? "Open reference"}
                           </a>
                         ) : null}
                       </div>
@@ -577,7 +579,7 @@ export function HomeScreen(): React.JSX.Element {
                 <p
                   style={{ margin: 0, color: "var(--muted)", lineHeight: 1.6 }}
                 >
-                  {t.noPinterest}
+                  {t.noExternal}
                 </p>
               )}
             </div>

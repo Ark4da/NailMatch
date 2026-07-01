@@ -9,7 +9,7 @@ NailMatch is a Next.js MVP for generating manicure concepts from an uploaded pho
 - Tailwind CSS
 - Supabase Postgres, Storage, and pgvector
 - OpenAI for image understanding, embeddings, and generated manicure concepts
-- Optional Pinterest API references for broader inspiration
+- Optional Google Images references through SerpAPI, or Bing Image Search references
 - Railway for deployment
 
 ## Local Development
@@ -46,7 +46,9 @@ Without these values, `/api/upload` stays in mock mode so the UI can still be de
 - `OPENAI_EMBEDDING_MODEL`
 - `OPENAI_VISION_MODEL`
 - `OPENAI_IMAGE_MODEL`
-- `PINTEREST_ACCESS_TOKEN` (optional)
+- `SERPAPI_API_KEY` (optional, preferred for Google Images references)
+- `BING_IMAGE_SEARCH_KEY` (optional fallback for Bing Image Search references)
+- `BING_IMAGE_SEARCH_ENDPOINT` (optional, defaults to the public Bing Images endpoint)
 
 ## Supabase Setup
 
@@ -71,4 +73,4 @@ The project also includes `/api/health` for a lightweight health check.
 
 ## Current State
 
-The site is Russian-first with an English switcher. The upload flow accepts one manicure photo plus an optional extra prompt. The live pipeline uploads the image to Supabase Storage, analyzes it with OpenAI, stores an embedding, finds similar saved designs with pgvector, optionally fetches Pinterest references, generates a new manicure concept image, and stores that generated image in Supabase Storage.
+The site is Russian-first with an English switcher. The upload flow accepts one manicure photo plus an optional extra prompt. The live pipeline uploads the image to Supabase Storage, analyzes it with OpenAI, stores an embedding, finds similar saved designs with pgvector, optionally fetches external image references through SerpAPI or Bing, generates a new manicure concept image, and stores that generated image in Supabase Storage.
