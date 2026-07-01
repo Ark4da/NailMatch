@@ -8,7 +8,7 @@ create table if not exists nail_designs (
   title text not null,
   tone text not null,
   description text not null,
-  embedding vector(3072) not null,
+  embedding vector(1536) not null,
   created_at timestamptz not null default now()
 );
 
@@ -18,7 +18,7 @@ create index if not exists nail_designs_embedding_idx
   with (lists = 100);
 
 create or replace function match_nail_designs(
-  query_embedding vector(3072),
+  query_embedding vector(1536),
   match_count int default 8,
   exclude_design_id uuid default null
 )

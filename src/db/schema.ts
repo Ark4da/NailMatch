@@ -8,7 +8,7 @@ export const nailDesigns = pgTable("nail_designs", {
   title: text("title").notNull(),
   tone: text("tone").notNull(),
   description: text("description").notNull(),
-  embedding: vector("embedding", { dimensions: 3072 }).notNull(),
+  embedding: vector("embedding", { dimensions: 1536 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull()

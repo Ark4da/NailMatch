@@ -6,7 +6,7 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   DATABASE_URL: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
-  OPENAI_EMBEDDING_MODEL: z.string().default("text-embedding-3-large"),
+  OPENAI_EMBEDDING_MODEL: z.string().default("text-embedding-3-small"),
   OPENAI_VISION_MODEL: z.string().default("gpt-4.1-mini"),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development")
 });

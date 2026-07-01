@@ -26,6 +26,7 @@ Use this stack as the project baseline:
 - file storage: `Supabase Storage`;
 - vector search: `pgvector` in Supabase Postgres;
 - AI provider: `OpenAI`;
+- embedding model: `text-embedding-3-small` with 1536 dimensions;
 - deployment platform: `Railway`;
 - package manager: `pnpm`;
 - forms: `react-hook-form` with `zod`;
