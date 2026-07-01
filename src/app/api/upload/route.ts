@@ -9,6 +9,7 @@ import {
   getMissingLivePipelineEnv
 } from "@/lib/server-env";
 import { mockMatches } from "@/lib/mock-matches";
+import { getErrorMessage, PipelineError } from "@/lib/pipeline-error";
 import { validateImageUpload } from "@/lib/upload-validation";
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -42,7 +43,18 @@ export async function POST(request: Request): Promise<NextResponse> {
         matches: savedDesign.matches
       });
     } catch (error) {
-      console.error("Live upload pipeline failed", error);
+      if (error instanceof PipelineError) {
+        console.error("Live upload pipeline failed", {
+          stage: error.stage,
+          message: error.message,
+          cause: getErrorMessage(error.cause)
+        });
+      } else {
+        console.error("Live upload pipeline failed", {
+          stage: "unknown",
+          message: getErrorMessage(error)
+        });
+      }
 
       return NextResponse.json(
         {

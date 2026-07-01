@@ -1,5 +1,6 @@
 import type { NailMatch } from "@/types/nail-design";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import { PipelineError } from "@/lib/pipeline-error";
 import type { ManicureAnalysis } from "@/features/matching/ai";
 
 const bucketName = "nail-designs";
@@ -32,7 +33,11 @@ export async function saveDesignAndFindMatches(input: {
     });
 
   if (uploadResult.error) {
-    throw uploadResult.error;
+    throw new PipelineError(
+      "supabase_storage_upload",
+      `Supabase Storage upload failed: ${uploadResult.error.message}`,
+      uploadResult.error
+    );
   }
 
   const publicUrl = supabase.storage.from(bucketName).getPublicUrl(storagePath)
@@ -53,7 +58,11 @@ export async function saveDesignAndFindMatches(input: {
     .single();
 
   if (insertResult.error) {
-    throw insertResult.error;
+    throw new PipelineError(
+      "supabase_insert",
+      `Supabase insert failed: ${insertResult.error.message}`,
+      insertResult.error
+    );
   }
 
   const matchesResult = await supabase.rpc("match_nail_designs", {
@@ -63,7 +72,11 @@ export async function saveDesignAndFindMatches(input: {
   });
 
   if (matchesResult.error) {
-    throw matchesResult.error;
+    throw new PipelineError(
+      "supabase_vector_search",
+      `Supabase vector search failed: ${matchesResult.error.message}`,
+      matchesResult.error
+    );
   }
 
   return {
@@ -86,5 +99,6 @@ function toNailMatch(row: MatchRow): NailMatch {
 
 function getFileExtension(file: File): string {
   const fallback = file.type.split("/")[1] || "jpg";
-  return file.name.split(".").pop()?.toLowerCase() || fallback;
+  const extension = file.name.split(".").pop()?.toLowerCase() || fallback;
+  return extension.replace(/[^a-z0-9]/g, "") || "jpg";
 }
