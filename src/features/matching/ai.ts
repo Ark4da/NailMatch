@@ -91,6 +91,7 @@ export async function createSearchEmbedding(input: string): Promise<number[]> {
 export async function generateManicureConceptImage(input: {
   analysis: ManicureAnalysis;
   matches: NailMatch[];
+  promptHint: string;
 }): Promise<{ b64Json: string; prompt: string }> {
   const openai = createOpenAIClient();
   const prompt = buildGenerationPrompt(input);
@@ -124,6 +125,7 @@ export async function generateManicureConceptImage(input: {
 function buildGenerationPrompt(input: {
   analysis: ManicureAnalysis;
   matches: NailMatch[];
+  promptHint: string;
 }): string {
   const matchContext =
     input.matches.length > 0
@@ -135,6 +137,9 @@ function buildGenerationPrompt(input: {
           )
           .join("\n")
       : "No close matches are available yet; use only the uploaded manicure analysis.";
+  const userDirection = input.promptHint
+    ? `User extra direction: ${input.promptHint}`
+    : "User extra direction: none.";
 
   return [
     "Generate one realistic square photo concept for a new manicure design.",
@@ -143,6 +148,7 @@ function buildGenerationPrompt(input: {
     "",
     `Uploaded manicure analysis: ${input.analysis.description}`,
     `Uploaded tone/style summary: ${input.analysis.tone}`,
+    userDirection,
     "",
     "Closest saved manicure references:",
     matchContext,

@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "NailMatch",
-  description: "Find manicure ideas similar to your uploaded photo."
+  description: "Генератор похожих дизайнов маникюра по загруженному фото."
 };
 
 type RootLayoutProps = Readonly<{
@@ -14,7 +14,7 @@ export default function RootLayout({
   children
 }: RootLayoutProps): React.JSX.Element {
   return (
-    <html lang="en">
+    <html lang="ru">
       <body>{children}</body>
     </html>
   );

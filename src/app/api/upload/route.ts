@@ -19,6 +19,7 @@ import { validateImageUpload } from "@/lib/upload-validation";
 export async function POST(request: Request): Promise<NextResponse> {
   const formData = await request.formData();
   const parsedFile = validateImageUpload(formData.get("image"));
+  const promptHint = parsePromptHint(formData.get("promptHint"));
 
   if (!parsedFile.success) {
     return NextResponse.json(
@@ -40,7 +41,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       });
       const generatedImage = await generateManicureConceptImage({
         analysis,
-        matches: savedDesign.matches
+        matches: savedDesign.matches,
+        promptHint
       });
       const storedGeneratedImage = await saveGeneratedImage({
         b64Json: generatedImage.b64Json
@@ -52,6 +54,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         description: analysis.description,
         generatedImageUrl: storedGeneratedImage.imageUrl,
         generatedPrompt: generatedImage.prompt,
+        promptHint,
         mode: "live",
         matches: savedDesign.matches
       });
@@ -84,7 +87,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     fileName: file.name,
     description: `Mock mode: missing ${getMissingLivePipelineEnv().join(", ")}. Soft neutral manicure with a clean glossy finish.`,
     generatedImageUrl: undefined,
+    promptHint,
     mode: "mock",
     matches: mockMatches
   });
+}
+
+function parsePromptHint(value: FormDataEntryValue | null): string {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim().slice(0, 800);
 }
