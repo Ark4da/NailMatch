@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import {
   analyzeManicureImage,
-  createSearchEmbedding
+  createSearchEmbedding,
+  generateManicureConceptImage
 } from "@/features/matching/ai";
-import { saveDesignAndFindMatches } from "@/features/matching/repository";
+import {
+  saveDesignAndFindMatches,
+  saveGeneratedImage
+} from "@/features/matching/repository";
 import {
   canUseLivePipeline,
   getMissingLivePipelineEnv
@@ -34,11 +38,20 @@ export async function POST(request: Request): Promise<NextResponse> {
         analysis,
         embedding
       });
+      const generatedImage = await generateManicureConceptImage({
+        analysis,
+        matches: savedDesign.matches
+      });
+      const storedGeneratedImage = await saveGeneratedImage({
+        b64Json: generatedImage.b64Json
+      });
 
       return NextResponse.json({
         uploadId: savedDesign.uploadId,
         fileName: file.name,
         description: analysis.description,
+        generatedImageUrl: storedGeneratedImage.imageUrl,
+        generatedPrompt: generatedImage.prompt,
         mode: "live",
         matches: savedDesign.matches
       });
@@ -70,6 +83,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     uploadId: crypto.randomUUID(),
     fileName: file.name,
     description: `Mock mode: missing ${getMissingLivePipelineEnv().join(", ")}. Soft neutral manicure with a clean glossy finish.`,
+    generatedImageUrl: undefined,
     mode: "mock",
     matches: mockMatches
   });

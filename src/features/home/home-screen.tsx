@@ -10,6 +10,7 @@ export function HomeScreen(): React.JSX.Element {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [matches, setMatches] = useState<NailMatch[]>(mockMatches);
   const [description, setDescription] = useState<string>("");
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string>("");
   const [responseMode, setResponseMode] =
     useState<UploadResponse["mode"]>("mock");
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -57,6 +58,7 @@ export function HomeScreen(): React.JSX.Element {
       }
 
       setDescription(payload.description ?? "");
+      setGeneratedImageUrl(payload.generatedImageUrl ?? "");
       setResponseMode(payload.mode ?? "mock");
       setMatches(payload.matches ?? []);
     } catch (uploadError) {
@@ -106,7 +108,7 @@ export function HomeScreen(): React.JSX.Element {
                 background: "rgba(255,255,255,0.65)"
               }}
             >
-              AI manicure similarity search
+              AI manicure concept generator
             </div>
             <div style={{ display: "grid", gap: 14, maxWidth: 760 }}>
               <h1
@@ -116,8 +118,8 @@ export function HomeScreen(): React.JSX.Element {
                   lineHeight: 0.95
                 }}
               >
-                Upload a manicure you already made and get close design ideas in
-                seconds.
+                Upload a manicure you already made and generate a fresh similar
+                design.
               </h1>
               <p
                 style={{
@@ -127,9 +129,9 @@ export function HomeScreen(): React.JSX.Element {
                   color: "var(--muted)"
                 }}
               >
-                NailMatch saves every new work in a shared inspiration library
-                and uses AI to find the nearest looks by shape, tone, finish,
-                and decorative mood.
+                NailMatch saves every new work in a shared inspiration library,
+                finds close references, then generates a new manicure concept
+                inspired by the closest uploaded designs.
               </p>
             </div>
           </div>
@@ -159,8 +161,9 @@ export function HomeScreen(): React.JSX.Element {
                 <p
                   style={{ margin: 0, color: "var(--muted)", lineHeight: 1.6 }}
                 >
-                  For MVP we keep the flow simple: upload, process, then view
-                  similar manicure ideas from the internal collection.
+                  Upload one manicure photo. The app stores it, finds similar
+                  saved works, and generates a new visual concept from those
+                  references.
                 </p>
               </div>
 
@@ -250,7 +253,9 @@ export function HomeScreen(): React.JSX.Element {
                   opacity: isUploading ? 0.78 : 1
                 }}
               >
-                {isUploading ? "Processing photo..." : "Find similar manicures"}
+                {isUploading
+                  ? "Generating concept..."
+                  : "Generate similar manicure"}
               </button>
 
               {description ? (
@@ -259,7 +264,7 @@ export function HomeScreen(): React.JSX.Element {
                 >
                   <strong style={{ color: "var(--text)" }}>
                     {responseMode === "live"
-                      ? "Live AI result:"
+                      ? "Live AI analysis:"
                       : "Mock result:"}
                   </strong>{" "}
                   {description}
@@ -279,15 +284,50 @@ export function HomeScreen(): React.JSX.Element {
             >
               <div style={{ display: "grid", gap: 8 }}>
                 <h2 style={{ margin: 0, fontSize: 24 }}>
-                  What the AI will return
+                  Generated manicure concept
                 </h2>
                 <p
                   style={{ margin: 0, color: "var(--muted)", lineHeight: 1.6 }}
                 >
-                  The API is wired for Supabase and OpenAI. It uses mock mode
-                  only until the required environment variables are configured.
+                  The generated image is created from your uploaded manicure and
+                  the closest saved references in the shared library.
                 </p>
               </div>
+
+              {generatedImageUrl ? (
+                <img
+                  src={generatedImageUrl}
+                  alt="Generated manicure concept"
+                  style={{
+                    width: "100%",
+                    aspectRatio: "1 / 1",
+                    objectFit: "cover",
+                    borderRadius: 24,
+                    border: "1px solid var(--line)"
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    minHeight: 260,
+                    borderRadius: 24,
+                    border: "1px solid var(--line)",
+                    background:
+                      "linear-gradient(135deg, #fff4ec 0%, #f8dcc8 45%, #fffaf7 100%)",
+                    display: "grid",
+                    placeItems: "center",
+                    padding: 20,
+                    textAlign: "center",
+                    color: "var(--muted)"
+                  }}
+                >
+                  Generated image will appear here after processing.
+                </div>
+              )}
+
+              <h3 style={{ margin: 0, fontSize: 18 }}>
+                Closest uploaded references
+              </h3>
 
               <div style={{ display: "grid", gap: 14 }}>
                 {matches.map((match) => (

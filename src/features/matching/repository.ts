@@ -85,6 +85,34 @@ export async function saveDesignAndFindMatches(input: {
   };
 }
 
+export async function saveGeneratedImage(input: {
+  b64Json: string;
+}): Promise<{ imageUrl: string; storagePath: string }> {
+  const supabase = createSupabaseAdminClient();
+  const storagePath = `generated/${crypto.randomUUID()}.webp`;
+  const imageBuffer = Buffer.from(input.b64Json, "base64");
+
+  const uploadResult = await supabase.storage
+    .from(bucketName)
+    .upload(storagePath, imageBuffer, {
+      contentType: "image/webp",
+      upsert: false
+    });
+
+  if (uploadResult.error) {
+    throw new PipelineError(
+      "supabase_generated_upload",
+      `Supabase generated image upload failed: ${uploadResult.error.message}`,
+      uploadResult.error
+    );
+  }
+
+  const imageUrl = supabase.storage.from(bucketName).getPublicUrl(storagePath)
+    .data.publicUrl;
+
+  return { imageUrl, storagePath };
+}
+
 function toNailMatch(row: MatchRow): NailMatch {
   return {
     id: row.id,

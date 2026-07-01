@@ -12,6 +12,8 @@ export type UploadResponse = {
   uploadId: string;
   fileName: string;
   description: string;
+  generatedImageUrl?: string;
+  generatedPrompt?: string;
   mode: "live" | "mock";
   matches: NailMatch[];
 };

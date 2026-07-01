@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createOpenAIClient } from "@/lib/openai-client";
 import { env } from "@/lib/env";
 import { getErrorMessage, PipelineError } from "@/lib/pipeline-error";
+import type { NailMatch } from "@/types/nail-design";
 
 const manicureAnalysisSchema = z.object({
   title: z.string().min(1),
@@ -85,6 +86,69 @@ export async function createSearchEmbedding(input: string): Promise<number[]> {
       error
     );
   }
+}
+
+export async function generateManicureConceptImage(input: {
+  analysis: ManicureAnalysis;
+  matches: NailMatch[];
+}): Promise<{ b64Json: string; prompt: string }> {
+  const openai = createOpenAIClient();
+  const prompt = buildGenerationPrompt(input);
+
+  try {
+    const image = await openai.images.generate({
+      model: env.OPENAI_IMAGE_MODEL,
+      prompt,
+      n: 1,
+      size: "1024x1024",
+      quality: "low",
+      output_format: "webp"
+    });
+
+    const b64Json = image.data?.[0]?.b64_json;
+
+    if (!b64Json) {
+      throw new Error("OpenAI returned an empty generated image.");
+    }
+
+    return { b64Json, prompt };
+  } catch (error) {
+    throw new PipelineError(
+      "openai_image_generation",
+      `OpenAI image generation failed: ${getErrorMessage(error)}`,
+      error
+    );
+  }
+}
+
+function buildGenerationPrompt(input: {
+  analysis: ManicureAnalysis;
+  matches: NailMatch[];
+}): string {
+  const matchContext =
+    input.matches.length > 0
+      ? input.matches
+          .slice(0, 4)
+          .map(
+            (match, index) =>
+              `${index + 1}. ${match.title}: ${match.tone}. ${match.reason}`
+          )
+          .join("\n")
+      : "No close matches are available yet; use only the uploaded manicure analysis.";
+
+  return [
+    "Generate one realistic square photo concept for a new manicure design.",
+    "The design must be inspired by the uploaded manicure and the closest internal library matches, but it must not copy any exact existing image.",
+    "Show a clean close-up of one hand with polished nails, salon lighting, realistic skin, natural proportions, and no text or watermark.",
+    "",
+    `Uploaded manicure analysis: ${input.analysis.description}`,
+    `Uploaded tone/style summary: ${input.analysis.tone}`,
+    "",
+    "Closest saved manicure references:",
+    matchContext,
+    "",
+    "Create a polished, wearable variation that combines the strongest shared traits: nail shape, color palette, finish, decoration style, and overall mood."
+  ].join("\n");
 }
 
 async function fileToDataUrl(file: File): Promise<string> {

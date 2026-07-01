@@ -46,6 +46,7 @@ All environments must support these variables:
 - `OPENAI_API_KEY`
 - `OPENAI_EMBEDDING_MODEL`
 - `OPENAI_VISION_MODEL`
+- `OPENAI_IMAGE_MODEL`
 
 If a new integration is added, update this section in the same change.
 
@@ -127,7 +128,7 @@ Expected `pnpm check` scope:
 - Store the original uploaded image and a thumbnail.
 - Generate and persist an embedding for every accepted manicure image.
 - Search similar designs by vector similarity from the internal database only.
-- Return a short human-readable explanation for why results are similar.
+- Return a generated manicure concept image plus short human-readable context for the closest references.
 - Keep AI prompts and model configuration centralized, versioned, and easy to update.
 - Log failed AI processing without exposing secret values.
 - Gracefully handle empty or low-volume databases by returning helpful fallback messaging.
