@@ -28,6 +28,22 @@ type BingImageResponse = {
   value?: BingImageResult[];
 };
 
+export function getExternalImageSearchStatus(): {
+  provider: "serpapi" | "bing" | "none";
+  hasSerpApiKey: boolean;
+  hasBingImageSearchKey: boolean;
+} {
+  return {
+    provider: env.SERPAPI_API_KEY
+      ? "serpapi"
+      : env.BING_IMAGE_SEARCH_KEY
+        ? "bing"
+        : "none",
+    hasSerpApiKey: Boolean(env.SERPAPI_API_KEY),
+    hasBingImageSearchKey: Boolean(env.BING_IMAGE_SEARCH_KEY)
+  };
+}
+
 export async function findExternalImageReferences(input: {
   analysis: ManicureAnalysis;
   promptHint: string;
@@ -62,17 +78,25 @@ async function findSerpApiReferences(input: {
     });
 
     if (!response.ok) {
-      throw new Error(`SerpAPI returned ${response.status}`);
+      throw new Error(
+        `SerpAPI returned ${response.status}: ${await readSafeErrorBody(response)}`
+      );
     }
 
     const payload = (await response.json()) as SerpApiImageResponse;
-
-    return (payload.images_results ?? [])
+    const references = (payload.images_results ?? [])
       .slice(0, 6)
       .map(toSerpApiReference)
       .filter((reference): reference is ExternalImageReference =>
         Boolean(reference)
       );
+
+    console.info("External image references loaded", {
+      provider: "serpapi",
+      count: references.length
+    });
+
+    return references;
   } catch (error) {
     throw new PipelineError(
       "external_image_search",
@@ -105,17 +129,25 @@ async function findBingReferences(input: {
     });
 
     if (!response.ok) {
-      throw new Error(`Bing Image Search returned ${response.status}`);
+      throw new Error(
+        `Bing Image Search returned ${response.status}: ${await readSafeErrorBody(response)}`
+      );
     }
 
     const payload = (await response.json()) as BingImageResponse;
-
-    return (payload.value ?? [])
+    const references = (payload.value ?? [])
       .slice(0, 6)
       .map(toBingReference)
       .filter((reference): reference is ExternalImageReference =>
         Boolean(reference)
       );
+
+    console.info("External image references loaded", {
+      provider: "bing",
+      count: references.length
+    });
+
+    return references;
   } catch (error) {
     throw new PipelineError(
       "external_image_search",
@@ -174,4 +206,10 @@ function toBingReference(item: BingImageResult): ExternalImageReference | null {
     imageUrl: item.contentUrl ?? item.thumbnailUrl,
     source: item.hostPageDisplayUrl ?? "Bing Images"
   };
+}
+
+async function readSafeErrorBody(response: Response): Promise<string> {
+  const body = await response.text();
+
+  return body.replaceAll(env.SERPAPI_API_KEY ?? "", "[redacted]").slice(0, 500);
 }
