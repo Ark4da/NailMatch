@@ -46,7 +46,6 @@ All environments must support these variables:
 - `OPENAI_API_KEY`
 - `OPENAI_EMBEDDING_MODEL`
 - `OPENAI_VISION_MODEL`
-- `NODE_ENV`
 
 If a new integration is added, update this section in the same change.
 

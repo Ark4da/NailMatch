@@ -7,8 +7,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_EMBEDDING_MODEL: z.string().default("text-embedding-3-small"),
-  OPENAI_VISION_MODEL: z.string().default("gpt-4.1-mini"),
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development")
+  OPENAI_VISION_MODEL: z.string().default("gpt-4.1-mini")
 });
 
 export const env = envSchema.parse(process.env);
