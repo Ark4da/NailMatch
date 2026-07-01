@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createOpenAIClient } from "@/lib/openai-client";
 import { env } from "@/lib/env";
 import { getErrorMessage, PipelineError } from "@/lib/pipeline-error";
-import type { NailMatch } from "@/types/nail-design";
+import type { NailMatch, PinterestReference } from "@/types/nail-design";
 
 const manicureAnalysisSchema = z.object({
   title: z.string().min(1),
@@ -91,6 +91,7 @@ export async function createSearchEmbedding(input: string): Promise<number[]> {
 export async function generateManicureConceptImage(input: {
   analysis: ManicureAnalysis;
   matches: NailMatch[];
+  pinterestReferences: PinterestReference[];
   promptHint: string;
 }): Promise<{ b64Json: string; prompt: string }> {
   const openai = createOpenAIClient();
@@ -125,6 +126,7 @@ export async function generateManicureConceptImage(input: {
 function buildGenerationPrompt(input: {
   analysis: ManicureAnalysis;
   matches: NailMatch[];
+  pinterestReferences: PinterestReference[];
   promptHint: string;
 }): string {
   const matchContext =
@@ -140,6 +142,16 @@ function buildGenerationPrompt(input: {
   const userDirection = input.promptHint
     ? `User extra direction: ${input.promptHint}`
     : "User extra direction: none.";
+  const pinterestContext =
+    input.pinterestReferences.length > 0
+      ? input.pinterestReferences
+          .slice(0, 4)
+          .map((pin, index) => {
+            const description = pin.description ? ` ${pin.description}` : "";
+            return `${index + 1}. ${pin.title}.${description}`;
+          })
+          .join("\n")
+      : "No Pinterest references are available.";
 
   return [
     "Generate one realistic square photo concept for a new manicure design.",
@@ -152,6 +164,9 @@ function buildGenerationPrompt(input: {
     "",
     "Closest saved manicure references:",
     matchContext,
+    "",
+    "Pinterest inspiration references. Use only broad style inspiration; do not copy exact designs:",
+    pinterestContext,
     "",
     "Create a polished, wearable variation that combines the strongest shared traits: nail shape, color palette, finish, decoration style, and overall mood."
   ].join("\n");

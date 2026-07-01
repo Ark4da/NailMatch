@@ -47,6 +47,7 @@ All environments must support these variables:
 - `OPENAI_EMBEDDING_MODEL`
 - `OPENAI_VISION_MODEL`
 - `OPENAI_IMAGE_MODEL`
+- `PINTEREST_ACCESS_TOKEN` (optional)
 
 If a new integration is added, update this section in the same change.
 
@@ -129,6 +130,7 @@ Expected `pnpm check` scope:
 - Generate and persist an embedding for every accepted manicure image.
 - Search similar designs by vector similarity from the internal database only.
 - Return a generated manicure concept image plus short human-readable context for the closest references.
+- Treat Pinterest references as optional inspiration only; do not copy, scrape, or persist external content as owned data.
 - Keep AI prompts and model configuration centralized, versioned, and easy to update.
 - Log failed AI processing without exposing secret values.
 - Gracefully handle empty or low-volume databases by returning helpful fallback messaging.

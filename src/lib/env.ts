@@ -8,7 +8,8 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_EMBEDDING_MODEL: z.string().default("text-embedding-3-small"),
   OPENAI_VISION_MODEL: z.string().default("gpt-4.1-mini"),
-  OPENAI_IMAGE_MODEL: z.string().default("gpt-image-1")
+  OPENAI_IMAGE_MODEL: z.string().default("gpt-image-1"),
+  PINTEREST_ACCESS_TOKEN: z.string().min(1).optional()
 });
 
 export const env = envSchema.parse(process.env);

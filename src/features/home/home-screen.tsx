@@ -2,7 +2,11 @@
 
 import { useEffect, useId, useState } from "react";
 import { mockMatches } from "@/lib/mock-matches";
-import type { NailMatch, UploadResponse } from "@/types/nail-design";
+import type {
+  NailMatch,
+  PinterestReference,
+  UploadResponse
+} from "@/types/nail-design";
 
 type Locale = "ru" | "en";
 
@@ -34,6 +38,8 @@ const copy = {
       "Новая картинка создается из загруженного фото, похожих работ из базы и твоего дополнительного промта.",
     emptyGenerated: "Сгенерированная картинка появится здесь после обработки.",
     referencesTitle: "Ближайшие референсы из базы",
+    pinterestTitle: "Pinterest-референсы",
+    noPinterest: "Pinterest-референсы не подключены или не найдены.",
     languageLabel: "Язык"
   },
   en: {
@@ -63,6 +69,8 @@ const copy = {
       "The generated image is created from your uploaded manicure, closest saved references, and your extra prompt.",
     emptyGenerated: "Generated image will appear here after processing.",
     referencesTitle: "Closest uploaded references",
+    pinterestTitle: "Pinterest references",
+    noPinterest: "Pinterest references are not connected or were not found.",
     languageLabel: "Language"
   }
 } satisfies Record<Locale, Record<string, string>>;
@@ -75,6 +83,9 @@ export function HomeScreen(): React.JSX.Element {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [promptHint, setPromptHint] = useState<string>("");
   const [matches, setMatches] = useState<NailMatch[]>(mockMatches);
+  const [pinterestReferences, setPinterestReferences] = useState<
+    PinterestReference[]
+  >([]);
   const [description, setDescription] = useState<string>("");
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string>("");
   const [responseMode, setResponseMode] =
@@ -128,6 +139,7 @@ export function HomeScreen(): React.JSX.Element {
       setGeneratedImageUrl(payload.generatedImageUrl ?? "");
       setResponseMode(payload.mode ?? "mock");
       setMatches(payload.matches ?? []);
+      setPinterestReferences(payload.pinterestReferences ?? []);
     } catch (uploadError) {
       setError(
         uploadError instanceof Error ? uploadError.message : "Upload failed."
@@ -494,6 +506,80 @@ export function HomeScreen(): React.JSX.Element {
                   </article>
                 ))}
               </div>
+
+              <h3 style={{ margin: 0, fontSize: 18 }}>{t.pinterestTitle}</h3>
+
+              {pinterestReferences.length > 0 ? (
+                <div style={{ display: "grid", gap: 14 }}>
+                  {pinterestReferences.map((pin) => (
+                    <article
+                      key={pin.id}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "92px 1fr",
+                        gap: 14,
+                        alignItems: "center",
+                        borderRadius: 22,
+                        border: "1px solid var(--line)",
+                        padding: 12,
+                        background:
+                          "linear-gradient(180deg, #fffaf7 0%, #fff4ec 100%)"
+                      }}
+                    >
+                      {pin.imageUrl ? (
+                        <img
+                          src={pin.imageUrl}
+                          alt={pin.title}
+                          style={{
+                            width: 92,
+                            height: 92,
+                            borderRadius: 18,
+                            objectFit: "cover"
+                          }}
+                        />
+                      ) : (
+                        <div
+                          aria-hidden="true"
+                          style={{
+                            width: 92,
+                            height: 92,
+                            borderRadius: 18,
+                            background:
+                              "linear-gradient(135deg, rgba(237, 194, 180, 1) 0%, rgba(255, 228, 212, 1) 55%, rgba(212, 152, 122, 1) 100%)"
+                          }}
+                        />
+                      )}
+                      <div style={{ display: "grid", gap: 6 }}>
+                        <strong>{pin.title}</strong>
+                        {pin.description ? (
+                          <p style={{ margin: 0, lineHeight: 1.5 }}>
+                            {pin.description}
+                          </p>
+                        ) : null}
+                        {pin.url ? (
+                          <a
+                            href={pin.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{
+                              color: "var(--accent-strong)",
+                              fontWeight: 700
+                            }}
+                          >
+                            Pinterest
+                          </a>
+                        ) : null}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p
+                  style={{ margin: 0, color: "var(--muted)", lineHeight: 1.6 }}
+                >
+                  {t.noPinterest}
+                </p>
+              )}
             </div>
           </div>
         </div>
