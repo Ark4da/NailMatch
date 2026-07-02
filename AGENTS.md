@@ -11,6 +11,7 @@ Product direction:
 - users upload manicure photos;
 - the system stores images in a shared library;
 - AI returns visually similar manicure options from the internal database;
+- the browser stores a local profile of recent user uploads and generated concepts for style continuity;
 - no auth, admin panel, marketplace, or social features in MVP.
 
 ## Project Stack
@@ -115,6 +116,7 @@ Expected `pnpm check` scope:
 - Do not add a separate backend service for MVP unless Next.js route handlers become a real bottleneck.
 - Keep the app stateless so it can run safely in Railway containers.
 - Do not rely on local disk for persistent user data; persistent assets must live in external storage.
+- Treat browser localStorage profile data as convenience-only state, not as durable account data.
 
 ## Railway Rules
 
@@ -144,6 +146,7 @@ Expected `pnpm check` scope:
 - Optimize for mobile first, then desktop.
 - Show clear loading, success, empty, and failure states.
 - Uploaded image preview must be visible before final submission when possible.
+- The local profile should make past uploads and generated concepts visible without requiring auth.
 - Search results should prioritize image clarity and fast scanning over dense metadata.
 - Avoid login walls, complex onboarding, or dashboard-style interfaces in MVP.
 

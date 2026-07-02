@@ -21,6 +21,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const formData = await request.formData();
   const parsedFile = validateImageUpload(formData.get("image"));
   const promptHint = parsePromptHint(formData.get("promptHint"));
+  const profileContext = parseProfileContext(formData.get("profileContext"));
 
   if (!parsedFile.success) {
     return NextResponse.json(
@@ -48,7 +49,8 @@ export async function POST(request: Request): Promise<NextResponse> {
         analysis,
         matches: savedDesign.matches,
         externalReferences,
-        promptHint
+        promptHint,
+        profileContext
       });
       const storedGeneratedImage = await saveGeneratedImage({
         b64Json: generatedImage.b64Json
@@ -58,6 +60,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         uploadId: savedDesign.uploadId,
         fileName: file.name,
         description: analysis.description,
+        uploadedImageUrl: savedDesign.uploadedImageUrl,
         generatedImageUrl: storedGeneratedImage.imageUrl,
         generatedPrompt: generatedImage.prompt,
         promptHint,
@@ -93,6 +96,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     uploadId: crypto.randomUUID(),
     fileName: file.name,
     description: `Mock mode: missing ${getMissingLivePipelineEnv().join(", ")}. Soft neutral manicure with a clean glossy finish.`,
+    uploadedImageUrl: undefined,
     generatedImageUrl: undefined,
     promptHint,
     mode: "mock",
@@ -131,4 +135,12 @@ function parsePromptHint(value: FormDataEntryValue | null): string {
   }
 
   return value.trim().slice(0, 800);
+}
+
+function parseProfileContext(value: FormDataEntryValue | null): string {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim().slice(0, 1600);
 }

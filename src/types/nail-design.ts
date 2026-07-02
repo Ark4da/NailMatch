@@ -21,6 +21,7 @@ export type UploadResponse = {
   uploadId: string;
   fileName: string;
   description: string;
+  uploadedImageUrl?: string;
   generatedImageUrl?: string;
   generatedPrompt?: string;
   promptHint?: string;

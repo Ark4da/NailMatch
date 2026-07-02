@@ -19,7 +19,11 @@ export async function saveDesignAndFindMatches(input: {
   file: File;
   analysis: ManicureAnalysis;
   embedding: number[];
-}): Promise<{ uploadId: string; matches: NailMatch[] }> {
+}): Promise<{
+  uploadId: string;
+  uploadedImageUrl: string;
+  matches: NailMatch[];
+}> {
   const supabase = createSupabaseAdminClient();
   const extension = getFileExtension(input.file);
   const storagePath = `${crypto.randomUUID()}.${extension}`;
@@ -81,6 +85,7 @@ export async function saveDesignAndFindMatches(input: {
 
   return {
     uploadId: insertResult.data.id,
+    uploadedImageUrl: publicUrl,
     matches: ((matchesResult.data ?? []) as MatchRow[]).map(toNailMatch)
   };
 }

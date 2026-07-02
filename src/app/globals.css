@@ -81,7 +81,10 @@ a {
 .reference-card strong,
 .reference-card p,
 .reference-card span,
-.reference-card a {
+.reference-card a,
+.profile-entry strong,
+.profile-entry p,
+.profile-entry span {
   overflow-wrap: anywhere;
 }
 
@@ -212,6 +215,31 @@ a {
     height: 76px !important;
     border-radius: 15px !important;
   }
+
+  .profile-panel {
+    border-radius: 20px !important;
+    padding: 12px !important;
+  }
+
+  .profile-panel h2 {
+    font-size: 19px !important;
+  }
+
+  .profile-panel button {
+    min-height: 38px !important;
+  }
+
+  .profile-entry {
+    grid-template-columns: 58px minmax(0, 1fr) !important;
+    padding: 9px !important;
+  }
+
+  .profile-entry img,
+  .profile-entry [aria-hidden="true"] {
+    width: 58px !important;
+    height: 58px !important;
+    border-radius: 13px !important;
+  }
 }
 
 @media (max-width: 380px) {
@@ -232,6 +260,17 @@ a {
   }
 
   .reference-thumb {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 4 / 3 !important;
+  }
+
+  .profile-entry {
+    grid-template-columns: 1fr !important;
+  }
+
+  .profile-entry img,
+  .profile-entry [aria-hidden="true"] {
     width: 100% !important;
     height: auto !important;
     aspect-ratio: 4 / 3 !important;

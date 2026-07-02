@@ -93,6 +93,7 @@ export async function generateManicureConceptImage(input: {
   matches: NailMatch[];
   externalReferences: ExternalImageReference[];
   promptHint: string;
+  profileContext: string;
 }): Promise<{ b64Json: string; prompt: string }> {
   const openai = createOpenAIClient();
   const prompt = buildGenerationPrompt(input);
@@ -128,6 +129,7 @@ function buildGenerationPrompt(input: {
   matches: NailMatch[];
   externalReferences: ExternalImageReference[];
   promptHint: string;
+  profileContext: string;
 }): string {
   const matchContext =
     input.matches.length > 0
@@ -142,6 +144,9 @@ function buildGenerationPrompt(input: {
   const userDirection = input.promptHint
     ? `User extra direction: ${input.promptHint}`
     : "User extra direction: none.";
+  const profileDirection = input.profileContext
+    ? `User profile context from previous uploaded/generated manicures:\n${input.profileContext}`
+    : "User profile context: no previous manicures are available.";
   const externalContext =
     input.externalReferences.length > 0
       ? input.externalReferences
@@ -166,6 +171,7 @@ function buildGenerationPrompt(input: {
     `Uploaded manicure analysis: ${input.analysis.description}`,
     `Uploaded tone/style summary: ${input.analysis.tone}`,
     userDirection,
+    profileDirection,
     "",
     "Closest saved manicure references:",
     matchContext,

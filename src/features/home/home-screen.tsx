@@ -10,6 +10,21 @@ import type {
 
 type Locale = "ru" | "en";
 
+type ProfileItem = {
+  id: string;
+  createdAt: string;
+  fileName: string;
+  description: string;
+  promptHint?: string;
+  imageUrl?: string;
+  uploadedImageUrl?: string;
+  generatedImageUrl?: string;
+  mode: UploadResponse["mode"];
+};
+
+const profileStorageKey = "nailmatch.profile.v1";
+const profileLimit = 12;
+
 const copy = {
   ru: {
     badge: "AI генератор маникюра",
@@ -41,6 +56,14 @@ const copy = {
     externalTitle: "Внешние референсы",
     noExternal:
       "Внешние референсы не подключены или не найдены. Добавь SerpAPI или Bing ключ в Railway, чтобы включить этот блок.",
+    profileTitle: "Мой профиль",
+    profileText:
+      "Здесь сохраняются твои последние загрузки и генерации. Новые идеи будут учитывать этот стиль.",
+    profileEmpty:
+      "Профиль пока пустой. Загрузи первый маникюр, и он появится здесь.",
+    profileClear: "Очистить профиль",
+    profileGenerated: "Сгенерировано",
+    profileUploaded: "Загружено",
     languageLabel: "Язык"
   },
   en: {
@@ -73,6 +96,14 @@ const copy = {
     externalTitle: "External references",
     noExternal:
       "External references are not connected or were not found. Add a SerpAPI or Bing key in Railway to enable this block.",
+    profileTitle: "My profile",
+    profileText:
+      "Your recent uploads and generations are saved here. New ideas will use this style context.",
+    profileEmpty:
+      "Your profile is empty. Upload the first manicure and it will appear here.",
+    profileClear: "Clear profile",
+    profileGenerated: "Generated",
+    profileUploaded: "Uploaded",
     languageLabel: "Language"
   }
 } satisfies Record<Locale, Record<string, string>>;
@@ -95,6 +126,11 @@ export function HomeScreen(): React.JSX.Element {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [profileItems, setProfileItems] = useState<ProfileItem[]>([]);
+
+  useEffect(() => {
+    setProfileItems(readProfileItems());
+  }, []);
 
   useEffect(() => {
     if (!selectedFile) {
@@ -122,6 +158,7 @@ export function HomeScreen(): React.JSX.Element {
     const formData = new FormData();
     formData.append("image", selectedFile);
     formData.append("promptHint", promptHint);
+    formData.append("profileContext", buildProfileContext(profileItems));
 
     try {
       const response = await fetch("/api/upload", {
@@ -142,6 +179,19 @@ export function HomeScreen(): React.JSX.Element {
       setResponseMode(payload.mode ?? "mock");
       setMatches(payload.matches ?? []);
       setExternalReferences(payload.externalReferences ?? []);
+
+      const profileItem = createProfileItem(payload, {
+        fileName: selectedFile.name,
+        promptHint
+      });
+
+      if (profileItem) {
+        setProfileItems((currentItems) =>
+          persistProfileItems(
+            [profileItem, ...currentItems].slice(0, profileLimit)
+          )
+        );
+      }
     } catch (uploadError) {
       setError(
         uploadError instanceof Error ? uploadError.message : "Upload failed."
@@ -407,6 +457,145 @@ export function HomeScreen(): React.JSX.Element {
                   {description}
                 </p>
               ) : null}
+
+              <section
+                className="profile-panel"
+                style={{
+                  border: "1px solid var(--line)",
+                  borderRadius: 24,
+                  padding: 14,
+                  background: "rgba(255,255,255,0.58)",
+                  display: "grid",
+                  gap: 12
+                }}
+              >
+                <div style={{ display: "grid", gap: 6 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 10
+                    }}
+                  >
+                    <h2 style={{ margin: 0, fontSize: 20 }}>
+                      {t.profileTitle}
+                    </h2>
+                    {profileItems.length > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setProfileItems(persistProfileItems([]))}
+                        style={{
+                          border: "1px solid var(--line)",
+                          borderRadius: 999,
+                          padding: "7px 10px",
+                          background: "rgba(255,255,255,0.7)",
+                          color: "var(--muted)",
+                          cursor: "pointer"
+                        }}
+                      >
+                        {t.profileClear}
+                      </button>
+                    ) : null}
+                  </div>
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "var(--muted)",
+                      lineHeight: 1.5
+                    }}
+                  >
+                    {t.profileText}
+                  </p>
+                </div>
+
+                {profileItems.length > 0 ? (
+                  <div
+                    className="profile-list"
+                    style={{ display: "grid", gap: 10 }}
+                  >
+                    {profileItems.slice(0, 5).map((item) => (
+                      <article
+                        key={item.id}
+                        className="profile-entry"
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "64px 1fr",
+                          gap: 10,
+                          alignItems: "center",
+                          borderRadius: 18,
+                          padding: 10,
+                          background: "rgba(255,250,247,0.86)",
+                          border: "1px solid var(--line)"
+                        }}
+                      >
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.fileName}
+                            style={{
+                              width: 64,
+                              height: 64,
+                              objectFit: "cover",
+                              borderRadius: 14
+                            }}
+                          />
+                        ) : (
+                          <div
+                            aria-hidden="true"
+                            style={{
+                              width: 64,
+                              height: 64,
+                              borderRadius: 14,
+                              background:
+                                "linear-gradient(135deg, rgba(237, 194, 180, 1) 0%, rgba(255, 228, 212, 1) 55%, rgba(212, 152, 122, 1) 100%)"
+                            }}
+                          />
+                        )}
+                        <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
+                          <strong
+                            style={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap"
+                            }}
+                          >
+                            {item.fileName}
+                          </strong>
+                          <span style={{ color: "var(--accent-strong)" }}>
+                            {item.generatedImageUrl
+                              ? t.profileGenerated
+                              : t.profileUploaded}
+                          </span>
+                          <p
+                            style={{
+                              margin: 0,
+                              color: "var(--muted)",
+                              lineHeight: 1.4,
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden"
+                            }}
+                          >
+                            {item.description}
+                          </p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "var(--muted)",
+                      lineHeight: 1.5
+                    }}
+                  >
+                    {t.profileEmpty}
+                  </p>
+                )}
+              </section>
             </div>
 
             <div
@@ -612,5 +801,98 @@ export function HomeScreen(): React.JSX.Element {
         </div>
       </section>
     </main>
+  );
+}
+
+function readProfileItems(): ProfileItem[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const rawItems = window.localStorage.getItem(profileStorageKey);
+
+    if (!rawItems) {
+      return [];
+    }
+
+    const parsedItems = JSON.parse(rawItems);
+
+    if (!Array.isArray(parsedItems)) {
+      return [];
+    }
+
+    return parsedItems.filter(isProfileItem).slice(0, profileLimit);
+  } catch {
+    return [];
+  }
+}
+
+function persistProfileItems(items: ProfileItem[]): ProfileItem[] {
+  const nextItems = items.slice(0, profileLimit);
+
+  if (typeof window === "undefined") {
+    return nextItems;
+  }
+
+  try {
+    window.localStorage.setItem(profileStorageKey, JSON.stringify(nextItems));
+  } catch {
+    // If storage is full or blocked, keep the in-memory profile for this tab.
+  }
+
+  return nextItems;
+}
+
+function createProfileItem(
+  payload: Partial<UploadResponse>,
+  fallback: { fileName: string; promptHint: string }
+): ProfileItem | null {
+  if (!payload.uploadId || !payload.description) {
+    return null;
+  }
+
+  const generatedImageUrl = payload.generatedImageUrl;
+  const uploadedImageUrl = payload.uploadedImageUrl;
+
+  return {
+    id: payload.uploadId,
+    createdAt: new Date().toISOString(),
+    fileName: payload.fileName ?? fallback.fileName,
+    description: payload.description,
+    promptHint: payload.promptHint ?? fallback.promptHint,
+    imageUrl: generatedImageUrl ?? uploadedImageUrl,
+    uploadedImageUrl,
+    generatedImageUrl,
+    mode: payload.mode ?? "mock"
+  };
+}
+
+function buildProfileContext(items: ProfileItem[]): string {
+  return items
+    .slice(0, 6)
+    .map((item, index) => {
+      const prompt = item.promptHint
+        ? ` User direction: ${item.promptHint}`
+        : "";
+      return `${index + 1}. ${item.description}${prompt}`;
+    })
+    .join("\n")
+    .slice(0, 1400);
+}
+
+function isProfileItem(value: unknown): value is ProfileItem {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const item = value as Partial<ProfileItem>;
+
+  return (
+    typeof item.id === "string" &&
+    typeof item.createdAt === "string" &&
+    typeof item.fileName === "string" &&
+    typeof item.description === "string" &&
+    (item.mode === "live" || item.mode === "mock")
   );
 }

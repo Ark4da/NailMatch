@@ -73,4 +73,4 @@ The project also includes `/api/health` for a lightweight health check.
 
 ## Current State
 
-The site is Russian-first with an English switcher. The upload flow accepts one manicure photo plus an optional extra prompt. The live pipeline uploads the image to Supabase Storage, analyzes it with OpenAI, stores an embedding, finds similar saved designs with pgvector, optionally fetches external image references through SerpAPI or Bing, generates a new manicure concept image, and stores that generated image in Supabase Storage.
+The site is Russian-first with an English switcher. The upload flow accepts one manicure photo plus an optional extra prompt. The live pipeline uploads the image to Supabase Storage, analyzes it with OpenAI, stores an embedding, finds similar saved designs with pgvector, optionally fetches external image references through SerpAPI or Bing, generates a new manicure concept image, and stores that generated image in Supabase Storage. The UI also keeps a local browser profile of recent uploads and generations, then sends a short profile summary with new uploads so generated ideas can follow the user's previous manicure style.
