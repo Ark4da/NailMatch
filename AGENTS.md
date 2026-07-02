@@ -146,6 +146,7 @@ Expected `pnpm check` scope:
 - Optimize for mobile first, then desktop.
 - Show clear loading, success, empty, and failure states.
 - Uploaded image preview must be visible before final submission when possible.
+- Generation controls may use simple template chips for color, mood, shape, decor, and variation strength.
 - The local profile should make past uploads and generated concepts visible without requiring auth.
 - Search results should prioritize image clarity and fast scanning over dense metadata.
 - Avoid login walls, complex onboarding, or dashboard-style interfaces in MVP.

@@ -134,7 +134,7 @@ function parsePromptHint(value: FormDataEntryValue | null): string {
     return "";
   }
 
-  return value.trim().slice(0, 800);
+  return value.trim().slice(0, 1400);
 }
 
 function parseProfileContext(value: FormDataEntryValue | null): string {

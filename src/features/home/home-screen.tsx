@@ -22,8 +22,152 @@ type ProfileItem = {
   mode: UploadResponse["mode"];
 };
 
+type TemplateGroupKey = "palette" | "mood" | "shape" | "decor" | "variation";
+
+type TemplateOption = {
+  id: string;
+  label: Record<Locale, string>;
+  prompt: string;
+};
+
+type TemplateGroup = {
+  key: TemplateGroupKey;
+  title: Record<Locale, string>;
+  options: TemplateOption[];
+};
+
 const profileStorageKey = "nailmatch.profile.v1";
 const profileLimit = 12;
+
+const generationTemplateGroups: TemplateGroup[] = [
+  {
+    key: "palette",
+    title: { ru: "Цвет", en: "Color" },
+    options: [
+      {
+        id: "soft-nude",
+        label: { ru: "Нежный нюд", en: "Soft nude" },
+        prompt: "Use a soft nude palette with warm clean undertones."
+      },
+      {
+        id: "milky-pink",
+        label: { ru: "Молочно-розовый", en: "Milky pink" },
+        prompt: "Use a milky pink palette with a delicate translucent finish."
+      },
+      {
+        id: "deep-red",
+        label: { ru: "Глубокий красный", en: "Deep red" },
+        prompt: "Use a deep red palette that feels elegant and salon-polished."
+      },
+      {
+        id: "cool-chrome",
+        label: { ru: "Холодный хром", en: "Cool chrome" },
+        prompt: "Use cool chrome tones with a sleek reflective finish."
+      }
+    ]
+  },
+  {
+    key: "mood",
+    title: { ru: "Настроение", en: "Mood" },
+    options: [
+      {
+        id: "minimal",
+        label: { ru: "Минимализм", en: "Minimal" },
+        prompt: "Make the design minimal, clean, and wearable."
+      },
+      {
+        id: "luxury",
+        label: { ru: "Люкс", en: "Luxury" },
+        prompt: "Make the design feel premium, expensive, and editorial."
+      },
+      {
+        id: "romantic",
+        label: { ru: "Романтично", en: "Romantic" },
+        prompt: "Make the design romantic, soft, airy, and feminine."
+      },
+      {
+        id: "bold",
+        label: { ru: "Смелее", en: "Bolder" },
+        prompt: "Make the design more expressive, confident, and eye-catching."
+      }
+    ]
+  },
+  {
+    key: "shape",
+    title: { ru: "Форма", en: "Shape" },
+    options: [
+      {
+        id: "almond",
+        label: { ru: "Миндаль", en: "Almond" },
+        prompt: "Use an almond nail shape."
+      },
+      {
+        id: "short-square",
+        label: { ru: "Короткий квадрат", en: "Short square" },
+        prompt: "Use a short square nail shape."
+      },
+      {
+        id: "oval",
+        label: { ru: "Овал", en: "Oval" },
+        prompt: "Use a soft oval nail shape."
+      },
+      {
+        id: "coffin",
+        label: { ru: "Балерина", en: "Coffin" },
+        prompt: "Use a modern coffin nail shape."
+      }
+    ]
+  },
+  {
+    key: "decor",
+    title: { ru: "Декор", en: "Decor" },
+    options: [
+      {
+        id: "none",
+        label: { ru: "Без декора", en: "No decor" },
+        prompt: "Avoid extra decorations; focus on color, finish, and shape."
+      },
+      {
+        id: "gold-lines",
+        label: { ru: "Золото", en: "Gold lines" },
+        prompt: "Add thin tasteful gold line details."
+      },
+      {
+        id: "micro-french",
+        label: { ru: "Микро-френч", en: "Micro French" },
+        prompt: "Add a refined micro French detail."
+      },
+      {
+        id: "pearls",
+        label: { ru: "Жемчуг", en: "Pearls" },
+        prompt: "Add subtle pearl-like accents without making it busy."
+      }
+    ]
+  },
+  {
+    key: "variation",
+    title: { ru: "Насколько менять", en: "Variation" },
+    options: [
+      {
+        id: "close",
+        label: { ru: "Похоже", en: "Close" },
+        prompt: "Stay close to the uploaded manicure and change only details."
+      },
+      {
+        id: "balanced",
+        label: { ru: "Баланс", en: "Balanced" },
+        prompt:
+          "Keep the main mood of the uploaded manicure, but create a clearly new variation."
+      },
+      {
+        id: "fresh",
+        label: { ru: "Сильно новое", en: "Fresh" },
+        prompt:
+          "Create a more noticeably different concept while preserving the strongest style traits."
+      }
+    ]
+  }
+];
 
 const copy = {
   ru: {
@@ -41,7 +185,12 @@ const copy = {
     chooseButton: "Выбрать фото",
     chosenFile: "Выбран файл",
     noFileError: "Сначала выбери фото маникюра.",
-    promptLabel: "Дополнительный промт для генерации",
+    templateTitle: "Настрой генерацию",
+    templateText:
+      "Выбери готовые направления: цвет, настроение, форму и декор. Можно оставить пустым.",
+    templateReset: "Сбросить",
+    templateSummary: "Выбрано:",
+    promptLabel: "Свои пожелания",
     promptPlaceholder:
       "Например: сделай более нежный нюд, добавь тонкий золотой декор, форма миндаль...",
     submitIdle: "Сгенерировать похожий маникюр",
@@ -81,7 +230,12 @@ const copy = {
     chooseButton: "Select photo",
     chosenFile: "Chosen file",
     noFileError: "Choose a manicure photo first.",
-    promptLabel: "Extra prompt for generation",
+    templateTitle: "Tune generation",
+    templateText:
+      "Pick ready directions: color, mood, shape, and decor. You can leave this empty.",
+    templateReset: "Reset",
+    templateSummary: "Selected:",
+    promptLabel: "Custom direction",
     promptPlaceholder:
       "Example: make it softer nude, add thin gold details, almond shape...",
     submitIdle: "Generate similar manicure",
@@ -127,6 +281,13 @@ export function HomeScreen(): React.JSX.Element {
   const [error, setError] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [profileItems, setProfileItems] = useState<ProfileItem[]>([]);
+  const [selectedTemplates, setSelectedTemplates] = useState<
+    Partial<Record<TemplateGroupKey, string>>
+  >({});
+  const selectedTemplateLabels = getSelectedTemplateLabels(
+    selectedTemplates,
+    locale
+  );
 
   useEffect(() => {
     setProfileItems(readProfileItems());
@@ -155,9 +316,13 @@ export function HomeScreen(): React.JSX.Element {
     setIsUploading(true);
     setError("");
 
+    const generationDirection = buildGenerationDirection(
+      selectedTemplates,
+      promptHint
+    );
     const formData = new FormData();
     formData.append("image", selectedFile);
-    formData.append("promptHint", promptHint);
+    formData.append("promptHint", generationDirection);
     formData.append("profileContext", buildProfileContext(profileItems));
 
     try {
@@ -182,7 +347,7 @@ export function HomeScreen(): React.JSX.Element {
 
       const profileItem = createProfileItem(payload, {
         fileName: selectedFile.name,
-        promptHint
+        promptHint: generationDirection
       });
 
       if (profileItem) {
@@ -404,6 +569,129 @@ export function HomeScreen(): React.JSX.Element {
                   setError("");
                 }}
               />
+
+              <section
+                className="template-panel"
+                style={{
+                  border: "1px solid var(--line)",
+                  borderRadius: 24,
+                  padding: 14,
+                  background: "rgba(255,255,255,0.58)",
+                  display: "grid",
+                  gap: 14
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    alignItems: "start"
+                  }}
+                >
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <h2 style={{ margin: 0, fontSize: 20 }}>
+                      {t.templateTitle}
+                    </h2>
+                    <p
+                      style={{
+                        margin: 0,
+                        color: "var(--muted)",
+                        lineHeight: 1.5
+                      }}
+                    >
+                      {t.templateText}
+                    </p>
+                  </div>
+                  {selectedTemplateLabels.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTemplates({})}
+                      style={{
+                        border: "1px solid var(--line)",
+                        borderRadius: 999,
+                        padding: "7px 10px",
+                        background: "rgba(255,255,255,0.7)",
+                        color: "var(--muted)",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {t.templateReset}
+                    </button>
+                  ) : null}
+                </div>
+
+                <div style={{ display: "grid", gap: 12 }}>
+                  {generationTemplateGroups.map((group) => (
+                    <div
+                      key={group.key}
+                      className="template-group"
+                      style={{ display: "grid", gap: 8 }}
+                    >
+                      <strong>{group.title[locale]}</strong>
+                      <div
+                        className="template-options"
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 8
+                        }}
+                      >
+                        {group.options.map((option) => {
+                          const isSelected =
+                            selectedTemplates[group.key] === option.id;
+
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              className="template-chip"
+                              onClick={() =>
+                                setSelectedTemplates((currentTemplates) =>
+                                  toggleTemplateSelection(
+                                    currentTemplates,
+                                    group.key,
+                                    option.id
+                                  )
+                                )
+                              }
+                              style={{
+                                border: `1px solid ${
+                                  isSelected ? "var(--accent)" : "var(--line)"
+                                }`,
+                                borderRadius: 999,
+                                padding: "9px 12px",
+                                background: isSelected
+                                  ? "var(--accent)"
+                                  : "rgba(255,255,255,0.72)",
+                                color: isSelected ? "#fff" : "var(--text)",
+                                cursor: "pointer"
+                              }}
+                            >
+                              {option.label[locale]}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {selectedTemplateLabels.length > 0 ? (
+                  <p
+                    style={{
+                      margin: 0,
+                      color: "var(--muted)",
+                      lineHeight: 1.5
+                    }}
+                  >
+                    <strong style={{ color: "var(--text)" }}>
+                      {t.templateSummary}
+                    </strong>{" "}
+                    {selectedTemplateLabels.join(", ")}
+                  </p>
+                ) : null}
+              </section>
 
               <label style={{ display: "grid", gap: 8 }}>
                 <span style={{ fontWeight: 700 }}>{t.promptLabel}</span>
@@ -879,6 +1167,64 @@ function buildProfileContext(items: ProfileItem[]): string {
     })
     .join("\n")
     .slice(0, 1400);
+}
+
+function buildGenerationDirection(
+  selectedTemplates: Partial<Record<TemplateGroupKey, string>>,
+  customPrompt: string
+): string {
+  const templateDirections = getSelectedTemplateOptions(selectedTemplates).map(
+    (option) => option.prompt
+  );
+  const trimmedCustomPrompt = customPrompt.trim();
+
+  return [
+    templateDirections.length > 0
+      ? `Generation template directions: ${templateDirections.join(" ")}`
+      : "",
+    trimmedCustomPrompt ? `Custom user direction: ${trimmedCustomPrompt}` : ""
+  ]
+    .filter(Boolean)
+    .join("\n")
+    .slice(0, 1400);
+}
+
+function getSelectedTemplateLabels(
+  selectedTemplates: Partial<Record<TemplateGroupKey, string>>,
+  locale: Locale
+): string[] {
+  return getSelectedTemplateOptions(selectedTemplates).map(
+    (option) => option.label[locale]
+  );
+}
+
+function getSelectedTemplateOptions(
+  selectedTemplates: Partial<Record<TemplateGroupKey, string>>
+): TemplateOption[] {
+  return generationTemplateGroups.flatMap((group) => {
+    const selectedId = selectedTemplates[group.key];
+    const option = group.options.find(
+      (currentOption) => currentOption.id === selectedId
+    );
+
+    return option ? [option] : [];
+  });
+}
+
+function toggleTemplateSelection(
+  selectedTemplates: Partial<Record<TemplateGroupKey, string>>,
+  groupKey: TemplateGroupKey,
+  optionId: string
+): Partial<Record<TemplateGroupKey, string>> {
+  const nextTemplates = { ...selectedTemplates };
+
+  if (nextTemplates[groupKey] === optionId) {
+    delete nextTemplates[groupKey];
+  } else {
+    nextTemplates[groupKey] = optionId;
+  }
+
+  return nextTemplates;
 }
 
 function isProfileItem(value: unknown): value is ProfileItem {

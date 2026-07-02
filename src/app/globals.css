@@ -78,6 +78,11 @@ a {
   touch-action: manipulation;
 }
 
+.template-chip {
+  min-height: 40px;
+  touch-action: manipulation;
+}
+
 .reference-card strong,
 .reference-card p,
 .reference-card span,
@@ -193,6 +198,27 @@ a {
     font-size: 15px !important;
   }
 
+  .template-panel {
+    border-radius: 20px !important;
+    padding: 12px !important;
+  }
+
+  .template-panel h2 {
+    font-size: 19px !important;
+  }
+
+  .template-options {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .template-chip {
+    width: 100% !important;
+    min-height: 42px !important;
+    padding: 9px 10px !important;
+    font-size: 14px !important;
+  }
+
   .generated-image,
   .generated-placeholder {
     border-radius: 20px !important;
@@ -274,5 +300,9 @@ a {
     width: 100% !important;
     height: auto !important;
     aspect-ratio: 4 / 3 !important;
+  }
+
+  .template-options {
+    grid-template-columns: 1fr !important;
   }
 }
