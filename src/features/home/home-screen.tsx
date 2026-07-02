@@ -47,22 +47,22 @@ const generationTemplateGroups: TemplateGroup[] = [
       {
         id: "soft-nude",
         label: { ru: "Нежный нюд", en: "Soft nude" },
-        prompt: "Use a soft nude palette with warm clean undertones."
+        prompt: "soft warm nude palette"
       },
       {
         id: "milky-pink",
         label: { ru: "Молочно-розовый", en: "Milky pink" },
-        prompt: "Use a milky pink palette with a delicate translucent finish."
+        prompt: "milky pink translucent palette"
       },
       {
         id: "deep-red",
         label: { ru: "Глубокий красный", en: "Deep red" },
-        prompt: "Use a deep red palette that feels elegant and salon-polished."
+        prompt: "deep red polished palette"
       },
       {
         id: "cool-chrome",
         label: { ru: "Холодный хром", en: "Cool chrome" },
-        prompt: "Use cool chrome tones with a sleek reflective finish."
+        prompt: "subtle cool chrome finish"
       }
     ]
   },
@@ -73,22 +73,22 @@ const generationTemplateGroups: TemplateGroup[] = [
       {
         id: "minimal",
         label: { ru: "Минимализм", en: "Minimal" },
-        prompt: "Make the design minimal, clean, and wearable."
+        prompt: "minimal clean wearable mood"
       },
       {
         id: "luxury",
         label: { ru: "Люкс", en: "Luxury" },
-        prompt: "Make the design feel premium, expensive, and editorial."
+        prompt: "premium salon luxury mood"
       },
       {
         id: "romantic",
         label: { ru: "Романтично", en: "Romantic" },
-        prompt: "Make the design romantic, soft, airy, and feminine."
+        prompt: "soft romantic airy mood"
       },
       {
         id: "bold",
         label: { ru: "Смелее", en: "Bolder" },
-        prompt: "Make the design more expressive, confident, and eye-catching."
+        prompt: "slightly bolder accent mood"
       }
     ]
   },
@@ -99,22 +99,22 @@ const generationTemplateGroups: TemplateGroup[] = [
       {
         id: "almond",
         label: { ru: "Миндаль", en: "Almond" },
-        prompt: "Use an almond nail shape."
+        prompt: "almond shape preference if compatible"
       },
       {
         id: "short-square",
         label: { ru: "Короткий квадрат", en: "Short square" },
-        prompt: "Use a short square nail shape."
+        prompt: "short square shape preference if compatible"
       },
       {
         id: "oval",
         label: { ru: "Овал", en: "Oval" },
-        prompt: "Use a soft oval nail shape."
+        prompt: "soft oval shape preference if compatible"
       },
       {
         id: "coffin",
         label: { ru: "Балерина", en: "Coffin" },
-        prompt: "Use a modern coffin nail shape."
+        prompt: "soft coffin shape preference if compatible"
       }
     ]
   },
@@ -125,22 +125,22 @@ const generationTemplateGroups: TemplateGroup[] = [
       {
         id: "none",
         label: { ru: "Без декора", en: "No decor" },
-        prompt: "Avoid extra decorations; focus on color, finish, and shape."
+        prompt: "no extra decor, color and finish only"
       },
       {
         id: "gold-lines",
         label: { ru: "Золото", en: "Gold lines" },
-        prompt: "Add thin tasteful gold line details."
+        prompt: "very thin tasteful gold line accent"
       },
       {
         id: "micro-french",
         label: { ru: "Микро-френч", en: "Micro French" },
-        prompt: "Add a refined micro French detail."
+        prompt: "refined micro French accent"
       },
       {
         id: "pearls",
         label: { ru: "Жемчуг", en: "Pearls" },
-        prompt: "Add subtle pearl-like accents without making it busy."
+        prompt: "tiny pearl-like accent, not busy"
       }
     ]
   },
@@ -151,19 +151,17 @@ const generationTemplateGroups: TemplateGroup[] = [
       {
         id: "close",
         label: { ru: "Похоже", en: "Close" },
-        prompt: "Stay close to the uploaded manicure and change only details."
+        prompt: "close variation, change only small details"
       },
       {
         id: "balanced",
         label: { ru: "Баланс", en: "Balanced" },
-        prompt:
-          "Keep the main mood of the uploaded manicure, but create a clearly new variation."
+        prompt: "balanced variation, keep uploaded manicure mood"
       },
       {
         id: "fresh",
         label: { ru: "Сильно новое", en: "Fresh" },
-        prompt:
-          "Create a more noticeably different concept while preserving the strongest style traits."
+        prompt: "fresh variation while preserving strongest style traits"
       }
     ]
   }
@@ -187,7 +185,7 @@ const copy = {
     noFileError: "Сначала выбери фото маникюра.",
     templateTitle: "Настрой генерацию",
     templateText:
-      "Выбери готовые направления: цвет, настроение, форму и декор. Можно оставить пустым.",
+      "Выбери мягкие направления для ИИ. Они не заменяют фото, а только аккуратно направляют результат.",
     templateReset: "Сбросить",
     templateSummary: "Выбрано:",
     promptLabel: "Свои пожелания",
@@ -232,7 +230,7 @@ const copy = {
     noFileError: "Choose a manicure photo first.",
     templateTitle: "Tune generation",
     templateText:
-      "Pick ready directions: color, mood, shape, and decor. You can leave this empty.",
+      "Pick soft AI directions. They do not replace the photo; they only gently guide the result.",
     templateReset: "Reset",
     templateSummary: "Selected:",
     promptLabel: "Custom direction",
@@ -1180,9 +1178,11 @@ function buildGenerationDirection(
 
   return [
     templateDirections.length > 0
-      ? `Generation template directions: ${templateDirections.join(" ")}`
+      ? `Soft template preferences, apply gently only if compatible with the uploaded manicure: ${templateDirections.join("; ")}.`
       : "",
-    trimmedCustomPrompt ? `Custom user direction: ${trimmedCustomPrompt}` : ""
+    trimmedCustomPrompt
+      ? `Custom user direction, also apply gently: ${trimmedCustomPrompt}`
+      : ""
   ]
     .filter(Boolean)
     .join("\n")

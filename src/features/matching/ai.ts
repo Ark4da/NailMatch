@@ -142,7 +142,7 @@ function buildGenerationPrompt(input: {
           .join("\n")
       : "No close matches are available yet; use only the uploaded manicure analysis.";
   const userDirection = input.promptHint
-    ? `User extra direction: ${input.promptHint}`
+    ? `User generation preferences: ${input.promptHint}`
     : "User extra direction: none.";
   const profileDirection = input.profileContext
     ? `User profile context from previous uploaded/generated manicures:\n${input.profileContext}`
@@ -164,9 +164,11 @@ function buildGenerationPrompt(input: {
       : "No external image references are available.";
 
   return [
-    "Generate one realistic square photo concept for a new manicure design.",
-    "The design must be inspired by the uploaded manicure and the closest internal library matches, but it must not copy any exact existing image.",
-    "Show a clean close-up of one hand with polished nails, salon lighting, realistic skin, natural proportions, and no text or watermark.",
+    "Generate one realistic square salon photo concept for a new manicure design.",
+    "Priority order: 1) realistic hand anatomy and clean manicure photo, 2) uploaded manicure analysis, 3) closest saved references, 4) user generation preferences.",
+    "User generation preferences are soft style hints, not strict commands. Apply them only when they fit naturally; never let them make the image busy, distorted, artificial, or inconsistent.",
+    "Keep the composition simple: one natural hand, five visible fingers when appropriate, realistic nail lengths, realistic skin, salon lighting, polished nails, no text, no watermark.",
+    "Avoid warped hands, extra fingers, melted nails, impossible nail shapes, overloaded decoration, excessive chrome glare, cluttered backgrounds, and plastic-looking skin.",
     "",
     `Uploaded manicure analysis: ${input.analysis.description}`,
     `Uploaded tone/style summary: ${input.analysis.tone}`,
@@ -179,7 +181,7 @@ function buildGenerationPrompt(input: {
     "External image search references. Use only broad style inspiration; do not copy exact designs:",
     externalContext,
     "",
-    "Create a polished, wearable variation that combines the strongest shared traits: nail shape, color palette, finish, decoration style, and overall mood."
+    "Create one polished, wearable variation. Prefer fewer, cleaner design choices over combining every requested detail."
   ].join("\n");
 }
 
