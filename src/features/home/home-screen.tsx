@@ -152,11 +152,13 @@ export function HomeScreen(): React.JSX.Element {
   }
 
   return (
-    <main style={{ padding: "32px 20px 72px" }}>
+    <main className="home-page" style={{ padding: "32px 20px 72px" }}>
       <section
+        className="home-container"
         style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gap: 24 }}
       >
         <div
+          className="home-shell"
           style={{
             border: "1px solid var(--line)",
             borderRadius: 32,
@@ -166,8 +168,12 @@ export function HomeScreen(): React.JSX.Element {
             overflow: "hidden"
           }}
         >
-          <div style={{ padding: "28px 24px 12px", display: "grid", gap: 18 }}>
+          <div
+            className="hero-header"
+            style={{ padding: "28px 24px 12px", display: "grid", gap: 18 }}
+          >
             <div
+              className="hero-topbar"
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -177,6 +183,7 @@ export function HomeScreen(): React.JSX.Element {
               }}
             >
               <div
+                className="hero-badge"
                 style={{
                   display: "inline-flex",
                   width: "fit-content",
@@ -192,6 +199,7 @@ export function HomeScreen(): React.JSX.Element {
 
               <div
                 aria-label={t.languageLabel}
+                className="language-switch"
                 style={{
                   display: "inline-flex",
                   border: "1px solid var(--line)",
@@ -221,7 +229,10 @@ export function HomeScreen(): React.JSX.Element {
               </div>
             </div>
 
-            <div style={{ display: "grid", gap: 14, maxWidth: 760 }}>
+            <div
+              className="hero-copy"
+              style={{ display: "grid", gap: 14, maxWidth: 760 }}
+            >
               <h1
                 style={{
                   margin: 0,
@@ -245,6 +256,7 @@ export function HomeScreen(): React.JSX.Element {
           </div>
 
           <div
+            className="main-grid"
             style={{
               padding: 24,
               display: "grid",
@@ -253,6 +265,7 @@ export function HomeScreen(): React.JSX.Element {
             }}
           >
             <div
+              className="flow-card"
               style={{
                 background: "var(--surface)",
                 border: "1px solid var(--line)",
@@ -273,6 +286,7 @@ export function HomeScreen(): React.JSX.Element {
 
               <label
                 htmlFor={inputId}
+                className="upload-dropzone"
                 style={{
                   borderRadius: 24,
                   border: "1.5px dashed var(--accent)",
@@ -304,6 +318,7 @@ export function HomeScreen(): React.JSX.Element {
                     <img
                       src={previewUrl}
                       alt="Selected manicure preview"
+                      className="upload-preview"
                       style={{
                         width: "min(100%, 320px)",
                         aspectRatio: "4 / 3",
@@ -366,6 +381,7 @@ export function HomeScreen(): React.JSX.Element {
                 type="button"
                 disabled={isUploading}
                 onClick={handleSubmit}
+                className="primary-action"
                 style={{
                   border: 0,
                   borderRadius: 18,
@@ -394,6 +410,7 @@ export function HomeScreen(): React.JSX.Element {
             </div>
 
             <div
+              className="result-card"
               style={{
                 background: "#fff",
                 border: "1px solid var(--line)",
@@ -416,6 +433,7 @@ export function HomeScreen(): React.JSX.Element {
                 <img
                   src={generatedImageUrl}
                   alt="Generated manicure concept"
+                  className="generated-image"
                   style={{
                     width: "100%",
                     aspectRatio: "1 / 1",
@@ -426,6 +444,7 @@ export function HomeScreen(): React.JSX.Element {
                 />
               ) : (
                 <div
+                  className="generated-placeholder"
                   style={{
                     minHeight: 260,
                     borderRadius: 24,
@@ -449,6 +468,7 @@ export function HomeScreen(): React.JSX.Element {
                 {matches.map((match) => (
                   <article
                     key={match.id}
+                    className="reference-card"
                     style={{
                       display: "grid",
                       gridTemplateColumns: "92px 1fr",
@@ -465,6 +485,7 @@ export function HomeScreen(): React.JSX.Element {
                       <img
                         src={match.thumbnailUrl ?? match.imageUrl}
                         alt={match.title}
+                        className="reference-thumb"
                         style={{
                           width: 92,
                           height: 92,
@@ -475,6 +496,7 @@ export function HomeScreen(): React.JSX.Element {
                     ) : (
                       <div
                         aria-hidden="true"
+                        className="reference-thumb"
                         style={{
                           width: 92,
                           height: 92,
@@ -516,6 +538,7 @@ export function HomeScreen(): React.JSX.Element {
                   {externalReferences.map((reference) => (
                     <article
                       key={reference.id}
+                      className="reference-card"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "92px 1fr",
@@ -532,6 +555,7 @@ export function HomeScreen(): React.JSX.Element {
                         <img
                           src={reference.imageUrl}
                           alt={reference.title}
+                          className="reference-thumb"
                           style={{
                             width: 92,
                             height: 92,
@@ -542,6 +566,7 @@ export function HomeScreen(): React.JSX.Element {
                       ) : (
                         <div
                           aria-hidden="true"
+                          className="reference-thumb"
                           style={{
                             width: 92,
                             height: 92,
