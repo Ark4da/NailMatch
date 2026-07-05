@@ -15,6 +15,22 @@ export type ExternalImageReference = {
   url?: string;
   imageUrl?: string;
   source?: string;
+  matchedFromImageUrl?: string;
+};
+
+export type ProfilePhoto = {
+  id: string;
+  fileName: string;
+  imageUrl: string;
+  createdAt: string;
+};
+
+export type ProfileReferenceResponse = {
+  mode: "live" | "mock";
+  uploadedPhotos: ProfilePhoto[];
+  references: ExternalImageReference[];
+  searchedPhotoCount: number;
+  message?: string;
 };
 
 export type UploadResponse = {

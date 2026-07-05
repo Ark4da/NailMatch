@@ -16,6 +16,19 @@ type SerpApiImageResponse = {
   images_results?: SerpApiImageResult[];
 };
 
+type SerpApiLensResult = {
+  position?: number;
+  title?: string;
+  link?: string;
+  source?: string;
+  thumbnail?: string;
+  image?: string;
+};
+
+type SerpApiLensResponse = {
+  visual_matches?: SerpApiLensResult[];
+};
+
 type BingImageResult = {
   name?: string;
   contentUrl?: string;
@@ -57,6 +70,58 @@ export async function findExternalImageReferences(input: {
   }
 
   return [];
+}
+
+export async function findVisualMatchesForImage(input: {
+  imageUrl: string;
+}): Promise<ExternalImageReference[]> {
+  if (!env.SERPAPI_API_KEY) {
+    return [];
+  }
+
+  const searchUrl = new URL("https://serpapi.com/search.json");
+  searchUrl.searchParams.set("engine", "google_lens");
+  searchUrl.searchParams.set("url", input.imageUrl);
+  searchUrl.searchParams.set("type", "visual_matches");
+  searchUrl.searchParams.set("q", "manicure nails");
+  searchUrl.searchParams.set("safe", "active");
+  searchUrl.searchParams.set("auto_crop", "true");
+  searchUrl.searchParams.set("api_key", env.SERPAPI_API_KEY);
+
+  try {
+    const response = await fetch(searchUrl, {
+      next: {
+        revalidate: 60 * 60
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `SerpAPI Lens returned ${response.status}: ${await readSafeErrorBody(response)}`
+      );
+    }
+
+    const payload = (await response.json()) as SerpApiLensResponse;
+    const references = (payload.visual_matches ?? [])
+      .slice(0, 8)
+      .map((item) => toSerpApiLensReference(item, input.imageUrl))
+      .filter((reference): reference is ExternalImageReference =>
+        Boolean(reference)
+      );
+
+    console.info("Visual image references loaded", {
+      provider: "serpapi_google_lens",
+      count: references.length
+    });
+
+    return references;
+  } catch (error) {
+    throw new PipelineError(
+      "external_image_search",
+      `SerpAPI Lens search failed: ${getErrorMessage(error)}`,
+      error
+    );
+  }
 }
 
 async function findSerpApiReferences(input: {
@@ -205,6 +270,27 @@ function toBingReference(item: BingImageResult): ExternalImageReference | null {
     url: item.hostPageUrl,
     imageUrl: item.contentUrl ?? item.thumbnailUrl,
     source: item.hostPageDisplayUrl ?? "Bing Images"
+  };
+}
+
+function toSerpApiLensReference(
+  item: SerpApiLensResult,
+  matchedFromImageUrl: string
+): ExternalImageReference | null {
+  const id = item.link ?? item.image ?? item.thumbnail;
+
+  if (!id) {
+    return null;
+  }
+
+  return {
+    id,
+    title: item.title || "Similar manicure reference",
+    description: item.source,
+    url: item.link,
+    imageUrl: item.image ?? item.thumbnail,
+    source: item.source ?? "Google Lens",
+    matchedFromImageUrl
   };
 }
 

@@ -8,10 +8,10 @@ The repository is still at bootstrap stage, so the stack and workflow below are 
 Product direction:
 
 - public website for manicure inspiration search;
-- users upload manicure photos;
-- the system stores images in a shared library;
-- AI returns visually similar manicure options from the internal database;
-- the browser stores a local profile of recent user uploads and generated concepts for style continuity;
+- users upload many manicure photos into a local browser profile;
+- the system stores uploaded profile images in Supabase Storage;
+- similar internet references are found from uploaded image URLs through SerpAPI Google Lens;
+- OpenAI generation is paused for the current MVP UI;
 - no auth, admin panel, marketplace, or social features in MVP.
 
 ## Project Stack
@@ -26,7 +26,8 @@ Use this stack as the project baseline:
 - database: `PostgreSQL` via `Supabase`;
 - file storage: `Supabase Storage`;
 - vector search: `pgvector` in Supabase Postgres;
-- AI provider: `OpenAI`;
+- image reference provider: `SerpAPI` Google Lens;
+- AI provider: `OpenAI` for legacy generation routes only;
 - embedding model: `text-embedding-3-small` with 1536 dimensions;
 - deployment platform: `Railway`;
 - package manager: `pnpm`;
@@ -38,17 +39,20 @@ Use this stack as the project baseline:
 
 ## Required Environment Variables
 
-All environments must support these variables:
+The current profile reference flow must support these variables:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `SERPAPI_API_KEY`
+
+Legacy AI generation routes may also use these variables:
+
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `DATABASE_URL`
 - `OPENAI_API_KEY`
 - `OPENAI_EMBEDDING_MODEL`
 - `OPENAI_VISION_MODEL`
 - `OPENAI_IMAGE_MODEL`
-- `SERPAPI_API_KEY` (optional)
 - `BING_IMAGE_SEARCH_KEY` (optional)
 - `BING_IMAGE_SEARCH_ENDPOINT` (optional)
 
@@ -128,26 +132,24 @@ Expected `pnpm check` scope:
 - Keep startup simple: install dependencies, build the app, run `pnpm start`.
 - If background work becomes necessary, define it explicitly as a separate Railway worker rather than hiding it inside web requests.
 
-## AI and Search Rules
+## Search Rules
 
 - Store the original uploaded image and a thumbnail.
-- Generate and persist an embedding for every accepted manicure image.
-- Search similar designs by vector similarity from the internal database only.
-- Return a generated manicure concept image plus short human-readable context for the closest references.
+- The current UI should not call OpenAI for generation or image analysis.
+- Upload profile images first, then search similar internet references from the public image URLs.
 - Treat external image-search references as optional inspiration only; do not copy, scrape, or persist external content as owned data.
-- Prefer SerpAPI for Google Images references; use Bing Image Search as a fallback provider when configured.
+- Prefer SerpAPI Google Lens visual matches for image-based references.
 - Keep AI prompts and model configuration centralized, versioned, and easy to update.
-- Log failed AI processing without exposing secret values.
+- Log failed search processing without exposing secret values.
 - Gracefully handle empty or low-volume databases by returning helpful fallback messaging.
 
 ## UX Rules
 
-- MVP flow must stay simple: upload photo, wait for processing, view similar designs.
+- MVP flow must stay simple: upload many photos, wait for processing, view internet references.
 - Optimize for mobile first, then desktop.
 - Show clear loading, success, empty, and failure states.
 - Uploaded image preview must be visible before final submission when possible.
-- Generation controls may use simple template chips for color, mood, shape, decor, and variation strength.
-- The local profile should make past uploads and generated concepts visible without requiring auth.
+- The local profile should make past uploaded photos visible without requiring auth.
 - Search results should prioritize image clarity and fast scanning over dense metadata.
 - Avoid login walls, complex onboarding, or dashboard-style interfaces in MVP.
 

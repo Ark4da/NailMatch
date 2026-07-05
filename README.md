@@ -1,6 +1,6 @@
 # NailMatch
 
-NailMatch is a Next.js MVP for generating manicure concepts from an uploaded photo.
+NailMatch is a Next.js MVP for building a manicure photo profile and finding similar internet references.
 
 ## Stack
 
@@ -8,8 +8,8 @@ NailMatch is a Next.js MVP for generating manicure concepts from an uploaded pho
 - TypeScript
 - Tailwind CSS
 - Supabase Postgres, Storage, and pgvector
-- OpenAI for image understanding, embeddings, and generated manicure concepts
-- Optional Google Images references through SerpAPI, or Bing Image Search references
+- SerpAPI Google Lens for visual internet references from uploaded manicure photos
+- OpenAI legacy routes are still present, but the current main UI does not use AI generation
 - Railway for deployment
 
 ## Local Development
@@ -34,21 +34,24 @@ pnpm check
 
 ## Environment
 
-Copy `.env.example` to `.env.local` and fill the values when Supabase and OpenAI are ready.
+Copy `.env.example` to `.env.local` and fill the values when Supabase and SerpAPI are ready.
 
-Without these values, `/api/upload` stays in mock mode so the UI can still be developed locally:
+The current no-AI profile flow needs:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `SERPAPI_API_KEY`
+
+Legacy AI generation/search routes additionally use:
+
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `DATABASE_URL`
 - `OPENAI_API_KEY`
 - `OPENAI_EMBEDDING_MODEL`
 - `OPENAI_VISION_MODEL`
 - `OPENAI_IMAGE_MODEL`
-- `SERPAPI_API_KEY` (optional, preferred for Google Images references)
-- `BING_IMAGE_SEARCH_KEY` (optional fallback for Bing Image Search references)
-- `BING_IMAGE_SEARCH_ENDPOINT` (optional, defaults to the public Bing Images endpoint)
+- `BING_IMAGE_SEARCH_KEY`
+- `BING_IMAGE_SEARCH_ENDPOINT`
 
 ## Supabase Setup
 
@@ -73,4 +76,4 @@ The project also includes `/api/health` for a lightweight health check.
 
 ## Current State
 
-The site is Russian-first with an English switcher. The upload flow accepts one manicure photo, quick generation templates for color/mood/shape/decor/variation, plus an optional extra prompt. The live pipeline uploads the image to Supabase Storage, analyzes it with OpenAI, stores an embedding, finds similar saved designs with pgvector, optionally fetches external image references through SerpAPI or Bing, generates a new manicure concept image, and stores that generated image in Supabase Storage. The UI also keeps a local browser profile of recent uploads and generations, then sends a short profile summary with new uploads so generated ideas can follow the user's previous manicure style.
+The site is Russian-first with an English switcher. The current main flow accepts many manicure photos at once, uploads them to Supabase Storage, stores them in a local browser profile, and finds visually similar internet references through SerpAPI Google Lens. OpenAI image analysis and generation are not used in the current UI.

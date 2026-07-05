@@ -1,4 +1,4 @@
-import type { NailMatch } from "@/types/nail-design";
+import type { NailMatch, ProfilePhoto } from "@/types/nail-design";
 import { createSupabaseAdminClient } from "@/lib/supabase-admin";
 import { PipelineError } from "@/lib/pipeline-error";
 import type { ManicureAnalysis } from "@/features/matching/ai";
@@ -116,6 +116,38 @@ export async function saveGeneratedImage(input: {
     .data.publicUrl;
 
   return { imageUrl, storagePath };
+}
+
+export async function saveProfilePhoto(file: File): Promise<ProfilePhoto> {
+  const supabase = createSupabaseAdminClient();
+  const extension = getFileExtension(file);
+  const storagePath = `profile/${crypto.randomUUID()}.${extension}`;
+  const fileBuffer = await file.arrayBuffer();
+
+  const uploadResult = await supabase.storage
+    .from(bucketName)
+    .upload(storagePath, fileBuffer, {
+      contentType: file.type,
+      upsert: false
+    });
+
+  if (uploadResult.error) {
+    throw new PipelineError(
+      "supabase_profile_upload",
+      `Supabase profile upload failed: ${uploadResult.error.message}`,
+      uploadResult.error
+    );
+  }
+
+  const imageUrl = supabase.storage.from(bucketName).getPublicUrl(storagePath)
+    .data.publicUrl;
+
+  return {
+    id: crypto.randomUUID(),
+    fileName: file.name,
+    imageUrl,
+    createdAt: new Date().toISOString()
+  };
 }
 
 function toNailMatch(row: MatchRow): NailMatch {
